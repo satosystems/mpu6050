@@ -1,0 +1,5 @@
+.stack-work/
+dist/
+src/System/Hardware/MPU6050.c
+src/cpp/demo_dmp
+*.o
