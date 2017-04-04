@@ -53,6 +53,7 @@ THE SOFTWARE.
 #include <sys/stat.h>
 #include <linux/i2c-dev.h>
 #include "I2Cdev.h"
+#include "debug.h"
 
 /** Default constructor.
  */
@@ -175,26 +176,26 @@ int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8
     int fd = open(findI2C(), O_RDWR);
 
     if (fd < 0) {
-        fprintf(stderr, "Failed to open device: %s\n", strerror(errno));
+        fdebug(stderr, "Failed to open device: %s\n", strerror(errno));
         return(-1);
     }
     if (ioctl(fd, I2C_SLAVE, devAddr) < 0) {
-        fprintf(stderr, "Failed to select device: %s\n", strerror(errno));
+        fdebug(stderr, "Failed to select device: %s\n", strerror(errno));
         close(fd);
         return(-1);
     }
     if (write(fd, &regAddr, 1) != 1) {
-        fprintf(stderr, "Failed to write reg: %s\n", strerror(errno));
+        fdebug(stderr, "Failed to write reg: %s\n", strerror(errno));
         close(fd);
         return(-1);
     }
     count = read(fd, data, length);
     if (count < 0) {
-        fprintf(stderr, "Failed to read device(%d): %s\n", count, ::strerror(errno));
+        fdebug(stderr, "Failed to read device(%d): %s\n", count, ::strerror(errno));
         close(fd);
         return(-1);
     } else if (count != length) {
-        fprintf(stderr, "Short read  from device, expected %d, got %d\n", length, count);
+        fdebug(stderr, "Short read  from device, expected %d, got %d\n", length, count);
         close(fd);
         return(-1);
     }
@@ -214,7 +215,7 @@ int8_t I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8
 int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t *data, uint16_t timeout) {
     int8_t count = 0;
 
-    printf("ReadWords() not implemented\n");
+    debug("ReadWords() not implemented\n");
     // Use readBytes() and potential byteswap
     *data = 0; // keep the compiler quiet
 
@@ -340,17 +341,17 @@ bool I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_
     int fd;
 
     if (length > 127) {
-        fprintf(stderr, "Byte write count (%d) > 127\n", length);
+        fdebug(stderr, "Byte write count (%d) > 127\n", length);
         return(FALSE);
     }
 
     fd = open(findI2C(), O_RDWR);
     if (fd < 0) {
-        fprintf(stderr, "Failed to open device: %s\n", strerror(errno));
+        fdebug(stderr, "Failed to open device: %s\n", strerror(errno));
         return(FALSE);
     }
     if (ioctl(fd, I2C_SLAVE, devAddr) < 0) {
-        fprintf(stderr, "Failed to select device: %s\n", strerror(errno));
+        fdebug(stderr, "Failed to select device: %s\n", strerror(errno));
         close(fd);
         return(FALSE);
     }
@@ -358,11 +359,11 @@ bool I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_
     memcpy(buf+1,data,length);
     count = write(fd, buf, length+1);
     if (count < 0) {
-        fprintf(stderr, "Failed to write device(%d): %s\n", count, ::strerror(errno));
+        fdebug(stderr, "Failed to write device(%d): %s\n", count, ::strerror(errno));
         close(fd);
         return(FALSE);
     } else if (count != length+1) {
-        fprintf(stderr, "Short write to device, expected %d, got %d\n", length+1, count);
+        fdebug(stderr, "Short write to device, expected %d, got %d\n", length+1, count);
         close(fd);
         return(FALSE);
     }
@@ -387,17 +388,17 @@ bool I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16
     // messes with the callers buffer
 
     if (length > 63) {
-        fprintf(stderr, "Word write count (%d) > 63\n", length);
+        fdebug(stderr, "Word write count (%d) > 63\n", length);
         return(FALSE);
     }
 
     fd = open(findI2C(), O_RDWR);
     if (fd < 0) {
-        fprintf(stderr, "Failed to open device: %s\n", strerror(errno));
+        fdebug(stderr, "Failed to open device: %s\n", strerror(errno));
         return(FALSE);
     }
     if (ioctl(fd, I2C_SLAVE, devAddr) < 0) {
-        fprintf(stderr, "Failed to select device: %s\n", strerror(errno));
+        fdebug(stderr, "Failed to select device: %s\n", strerror(errno));
         close(fd);
         return(FALSE);
     }
@@ -408,11 +409,11 @@ bool I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16
     }
     count = write(fd, buf, length*2+1);
     if (count < 0) {
-        fprintf(stderr, "Failed to write device(%d): %s\n", count, ::strerror(errno));
+        fdebug(stderr, "Failed to write device(%d): %s\n", count, ::strerror(errno));
         close(fd);
         return(FALSE);
     } else if (count != length*2+1) {
-        fprintf(stderr, "Short write to device, expected %d, got %d\n", length+1, count);
+        fdebug(stderr, "Short write to device, expected %d, got %d\n", length+1, count);
         close(fd);
         return(FALSE);
     }

@@ -7,6 +7,7 @@
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 #include "DMP.h"
+#include "debug.h"
 
 // class default I2C address is 0x68
 // specific I2C addresses may be passed as a parameter here
@@ -26,25 +27,25 @@ int setup() {
     if (dmpReady) return 0;
 
     // initialize device
-    printf("Initializing I2C devices...\n");
+    debug("Initializing I2C devices...\n");
     mpu.initialize();
 
     // verify connection
-    printf("Testing device connections...\n");
-    printf(mpu.testConnection() ? "MPU6050 connection successful\n" : "MPU6050 connection failed\n");
+    debug("Testing device connections...\n");
+    debug(mpu.testConnection() ? "MPU6050 connection successful\n" : "MPU6050 connection failed\n");
 
     // load and configure the DMP
-    printf("Initializing DMP...\n");
+    debug("Initializing DMP...\n");
     uint8_t devStatus = mpu.dmpInitialize();
 
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {
         // turn on the DMP, now that it's ready
-        printf("Enabling DMP...\n");
+        debug("Enabling DMP...\n");
         mpu.setDMPEnabled(true);
 
         // set our DMP Ready flag so the main loop() function knows it's okay to use it
-        printf("DMP ready!\n");
+        debug("DMP ready!\n");
         dmpReady = true;
 
         // get expected DMP packet size for later comparison
@@ -55,7 +56,7 @@ int setup() {
         // 1 = initial memory load failed
         // 2 = DMP configuration updates failed
         // (if it's going to break, usually the code will be 1)
-        printf("DMP Initialization failed (code %d)\n", devStatus);
+        debug("DMP Initialization failed (code %d)\n", devStatus);
         return -1;
     }
 }
@@ -69,7 +70,7 @@ float *getYawPitchRoll() {
         if (fifoCount == 1024) {
             // reset so we can continue cleanly
             mpu.resetFIFO();
-            printf("FIFO overflow!\n");
+            debug("FIFO overflow!\n");
 
         } else if (fifoCount >= 42) {
             // otherwise, check for DMP data ready interrupt (this should happen frequently)
@@ -84,7 +85,7 @@ float *getYawPitchRoll() {
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
             ypr[0] *= 180 / M_PI, ypr[1] *= 180 / M_PI, ypr[2] *= 180 / M_PI;
-//            printf("ypr  %7.2f %7.2f %7.2f\n", ypr[0], ypr[1], ypr[2]);
+            debug("ypr  %7.2f %7.2f %7.2f\n", ypr[0], ypr[1], ypr[2]);
         }
     }
     return ypr;
