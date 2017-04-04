@@ -33,6 +33,7 @@ THE SOFTWARE.
 #ifndef _MPU6050_6AXIS_MOTIONAPPS20_H_
 #define _MPU6050_6AXIS_MOTIONAPPS20_H_
 
+#include "debug.h"
 #include "I2Cdev.h"
 #include "helper_3dmath.h"
 
@@ -351,14 +352,14 @@ uint8_t MPU6050::dmpInitialize() {
     DEBUG_PRINT(MPU6050_DMP_CODE_SIZE);
     DEBUG_PRINTLN(F(" bytes)"));
     if (writeProgMemoryBlock(dmpMemory, MPU6050_DMP_CODE_SIZE)) {
-        printf("Success! DMP code written and verified.\n");
+        debug("Success! DMP code written and verified.\n");
 
         // write DMP configuration
         DEBUG_PRINT(F("Writing DMP configuration to MPU memory banks ("));
         DEBUG_PRINT(MPU6050_DMP_CONFIG_SIZE);
         DEBUG_PRINTLN(F(" bytes in config def)"));
         if (writeProgDMPConfigurationSet(dmpConfig, MPU6050_DMP_CONFIG_SIZE)) {
-            printf("Success! DMP configuration written and verified.\n");
+            debug("Success! DMP configuration written and verified.\n");
 
             DEBUG_PRINTLN(F("Setting clock source to Z Gyro..."));
             setClockSource(MPU6050_CLOCK_PLL_ZGYRO);
@@ -412,7 +413,7 @@ uint8_t MPU6050::dmpInitialize() {
             uint8_t fifoCount = getFIFOCount();
             uint8_t fifoBuffer[128];
 
-            printf("Current FIFO count=%d\n", fifoCount);
+            debug("Current FIFO count=%d\n", fifoCount);
             DEBUG_PRINTLN(fifoCount);
             getFIFOBytes(fifoBuffer, fifoCount);
 
@@ -452,10 +453,10 @@ uint8_t MPU6050::dmpInitialize() {
             for (j = 0; j < 4 || j < dmpUpdate[2] + 3; j++, pos++) dmpUpdate[j] = pgm_read_byte(&dmpUpdates[pos]);
             writeMemoryBlock(dmpUpdate + 3, dmpUpdate[2], dmpUpdate[0], dmpUpdate[1]);
 
-            printf("Waiting for FIFO count > 2...\n");
+            debug("Waiting for FIFO count > 2...\n");
             while ((fifoCount = getFIFOCount()) < 3);
 
-            printf("Current FIFO count=%d",fifoCount);
+            debug("Current FIFO count=%d",fifoCount);
             DEBUG_PRINTLN(fifoCount);
             DEBUG_PRINTLN(F("Reading FIFO data..."));
             getFIFOBytes(fifoBuffer, fifoCount);
